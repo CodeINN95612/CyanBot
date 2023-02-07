@@ -1,0 +1,9 @@
+# Archivos de hoja de calculo
+*.xlsx
+*.xlsm
+
+# Archivo de configuración
+config.json
+
+# Carpeta de caché de Python
+__pycache__/
