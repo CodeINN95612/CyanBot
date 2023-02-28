@@ -3,7 +3,9 @@
 *.xlsm
 
 # Archivo de configuración
-config.json
+data/config.json
+data/msg.json
+data/series.json
 
 # Carpeta de caché de Python
 __pycache__/
