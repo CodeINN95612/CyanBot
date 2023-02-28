@@ -84,7 +84,7 @@ En el archivo `data/config.json` se debe definir el campo de `updateChannels`. s
 //...
   "updateChannels": [
     "12345678",
-    "12344556
+    "12344556"
   ]
 //...
 }
