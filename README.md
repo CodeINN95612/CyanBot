@@ -69,7 +69,7 @@ py CyanBot.py
 ## ¿Cómo Funciona?
 
 ### Comandos
-Los comandos solo funcionarán en el canal cuya *Id* que haya sido ingresado en el apartado de `adminChannel` en el archivo `data/config.json' y si es utilizado por aquellos usuarios cuya *Id* este ingresada en el arreglo de `admins` en el archivo. 
+Los comandos solo funcionarán en el canal cuya *Id* que haya sido ingresado en el apartado de `adminChannel` en el archivo `data/config.json` y si es utilizado por aquellos usuarios cuya *Id* este ingresada en el arreglo de `admins` en el archivo. 
 Además solo funcionarán con el `prefix` definido.
 - **help**: Despliega una ayuda con información de los comandos.
 - **update**: Genera un archivo de hoja de cálculo, contabilizando el monto que se debe pagar a los usuarios segun los roles trabajados en el **mes actual**. Para definir estos roles es que se debe llenar en el archivo de `data/config.json` los objetos con un `"name"` y un `"value"`. El name es el rol y value es el monto por cada rol.
@@ -98,7 +98,7 @@ Las series ya actualizadas serán insertadas en un archivo `data/series.json` co
 Para así evitar mostrar la misma serie y capítulo nuevamente.
 
 ### Subir trabajos
-Para subir los trabajos, es importante definir todos los roles en el archivo `dara/config.json` como fue explicado mas arriba. Además, se debe definir el campo `submitChannel` con el *Id* del canal en el que se va a realizar la subida.
+Para subir los trabajos, es importante definir todos los roles en el archivo `data/config.json` como fue explicado mas arriba. Además, se debe definir el campo `submitChannel` con el *Id* del canal en el que se va a realizar la subida.
 Cada vez que el bot inicia por primera vez, va a escanear todos los mensajes enviados en ese canal por los pasados 30 dias, parametrizables con el campo de `scanDays`. Esto para poder utilizar el comando **update** desde el primer momento.
 Para subir un trabajo cada usuario deberá escribir un mensaje normal (sin prefijo) con el formato: `<Nombre de la obra> <Rol> <Capitulo> [@menciones]` (El nombre de la obra puede estar separado por espacios y además las menciones son opcionales aunque siempre deben llevar un `@`. Las mayúsculas y minusculas no importan ni en el rol ni el nombre de la obra ya que de fondo será transformado a minúscula.
 Ejemplo:
