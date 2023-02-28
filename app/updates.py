@@ -70,7 +70,7 @@ def getUpdateEmbed(update):
         "url": "",
         "description": "",
         "color": 0x0000ff,
-        "thumbnail": {
+        "image": {
             "url": ""
         },
         "fields": [
@@ -84,7 +84,7 @@ def getUpdateEmbed(update):
     desc = update["description"]
     template[
         'description'] = f"💥 Aqui una nueva actualización 💥 ¡Revisenla en nuestra página oficial! \n \n {desc}"
-    template['thumbnail']['url'] = update['cover']
+    template['image']['url'] = update['cover']
     template['fields'][0]['value'] = f"[[Capítulo]]({update['chLink']}) • [[Serie]]({update['sLink']})"
     return template
 

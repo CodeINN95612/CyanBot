@@ -73,7 +73,7 @@ Los comandos solo funcionarán en el canal cuya *Id* que haya sido ingresado en 
 Además solo funcionarán con el `prefix` definido.
 - **help**: Despliega una ayuda con información de los comandos.
 - **update**: Genera un archivo de hoja de cálculo, contabilizando el monto que se debe pagar a los usuarios segun los roles trabajados en el **mes actual**. Para definir estos roles es que se debe llenar en el archivo de `data/config.json` los objetos con un `"name"` y un `"value"`. El name es el rol y value es el monto por cada rol.
-- **stats**: No hace nada por ahora...
+- **stats [user/role]**: Muestra estadisticas del usuario o del rol. en caso de dejar vacio muestra estadisticas globales. 
 
 ### Actualizaciones
 Tomará el link definido en el campo de `updateLink` definido en el archivo `data/config.json` y de esa página ira sacando las últimas actualizaciones de mangas traducidos.

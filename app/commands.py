@@ -2,11 +2,12 @@ from . import config, storage, stats as st
 from .types import CmdArgs
 import discord
 import datetime
+from tabulate import tabulate
 
 
 async def manage_commands(args: CmdArgs):
 
-    msg, _, userId, isCommand, _, isSubmit, isAdmin = args
+    msg, discordMessage, userId, isCommand, _, isSubmit, isAdmin = args
 
     if isCommand and isAdmin and userId in config.config["admins"]:
 
@@ -28,6 +29,8 @@ async def _cmdHelp(args: CmdArgs):
     embed.add_field(name="help", value="Comando de Ayuda", inline=True)
     embed.add_field(
         name="update", value="Obtener las actualizaciones de trabajos de este mes", inline=True)
+    embed.add_field(
+        name="stats [user/userID/role]", value="En caso de enviar sin parametro envia estadisticas globales, sino envia las estadisticas del usuario o del rol", inline=True)
 
     await args[1].reply(embed=embed)
 
@@ -69,23 +72,60 @@ async def _makeNew(args: CmdArgs):
 
 
 async def _cmdStats(args: CmdArgs):
-    return
+    # return
 
-    msg = args[0]
+    msg = args[0].split(" ")
     discordMessage = args[1]
 
     data = storage.getMessages()
     roles = config.config["roles"]
-    param = msg.split()[1]
 
+    # Globales
     if len(msg) == 1:
-        stats, (h1, h2) = st.parseGlobalStats(data)
-    elif param in roles:
+        stats1, stats2, stats3 = st.parseGlobalStats(data)
+
+        text = f"```{_intoTabulate(stats1)}```\n ```{_intoTabulate(stats2)}```\n ```{_intoTabulate(stats3)}```\n "
+
+        embed = discord.Embed(title="Estadísticas globales", color=0x0000ff,
+                              description=text)
+        await discordMessage.reply(embed=embed)
+
+        return
+
+    param = msg[1]
+
+    # Rol
+    if param in [role["name"].lower() for role in roles]:
         role = param
-        stats, header = st.parseRoleStats(data)
-        pass
-    else:
-        userName = param
-        userId = discordMessage.guild.get_member_named(userName)
-        stats, (h1, h2) = st.parseUserStats(data, userId)
-        pass
+        stats = st.parseRoleStats(data, role)
+        text = f"```{_intoTabulate(stats)}```"
+        embed = discord.Embed(title=f"Estadísticas del rol {role}", color=0x0000ff,
+                              description=text)
+        await discordMessage.reply(embed=embed)
+        return
+
+    # Usuario
+    userName = param
+    userId = 0
+    for member in discordMessage.guild.members:
+        names = [member.id, member.display_name.lower(), member.name.lower()]
+        if userName in names:
+            userId = member.id
+            break
+
+    if userId == 0:
+        embed = discord.Embed(
+            title="Not found", description=f"No se encontro el usuario {userName}", color=0xff0000)
+        await discordMessage.reply(embed=embed)
+        return
+
+    stats1, stats2 = st.parseUserStats(data, userId)
+    text = f"```{_intoTabulate(stats1)}```\n ```{_intoTabulate(stats2)}```\n"
+    embed = discord.Embed(title=f"Estadísticas del usuario {userName}", color=0x0000ff,
+                          description=text)
+    await discordMessage.reply(embed=embed)
+
+
+def _intoTabulate(stats):
+    headers, data = stats
+    return tabulate(data, headers=headers, tablefmt="fancy_grid")

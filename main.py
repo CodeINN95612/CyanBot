@@ -26,9 +26,9 @@ async def on_message(message: discord.Message):
         return
 
     submitChannel = config.config["submitChannel"]
-    isSubmit = message.channel.id = int(submitChannel)
+    isSubmit = message.channel.id == int(submitChannel)
     adminChannel = config.config["adminChannel"]
-    isAdmin = message.channel.id = int(adminChannel)
+    isAdmin = message.channel.id == int(adminChannel)
 
     isCommand = message.content.startswith(config.config['prefix'])
     index = 1 if isCommand else 0
@@ -73,7 +73,7 @@ async def _updateHandler(update):
             continue
 
         updateChannel = client.get_channel(int(chId))
-        await updateChannel.send(embed=embed, content="@ everyone")
+        await updateChannel.send(embed=embed)
 
 
 async def checkUpdates():
