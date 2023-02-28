@@ -5,6 +5,13 @@ Por el momento no hace nada...
 
 ---
 
+## Clonar el Repositorio
+En una carpeta ejecutar
+```bash
+git clone https://github.com/CodeINN95612/CyanBot.git
+```
+---
+
 ## Ejecucion
 Se debe instalar los requerimientos con
 ```bash
