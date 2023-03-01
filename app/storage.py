@@ -9,6 +9,10 @@ from openpyxl.styles import Font, Border, Side, PatternFill, Alignment
 
 
 async def setUp():
+
+    if not os.path.exists(globals.DATA_DIR):
+        os.makedirs(globals.DATA_DIR)
+
     if not os.path.exists(globals.SERIES_FILE):
         with open(globals.SERIES_FILE, 'w') as f:
             json.dump({}, f)
