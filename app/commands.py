@@ -108,7 +108,8 @@ async def _cmdStats(args: CmdArgs):
     userName = param
     userId = 0
     for member in discordMessage.guild.members:
-        names = [member.id, member.display_name.lower(), member.name.lower()]
+        names = [str(member.id), member.display_name.lower(),
+                 member.name.lower()]
         if userName in names:
             userId = member.id
             break
