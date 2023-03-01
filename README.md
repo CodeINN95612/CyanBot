@@ -78,13 +78,15 @@ Además solo funcionarán con el `prefix` definido.
 ### Actualizaciones
 Tomará el link definido en el campo de `updateLink` definido en el archivo `data/config.json` y de esa página ira sacando las últimas actualizaciones de mangas traducidos.
 En el archivo `data/config.json` se debe definir el campo de `updateChannels`. se debe tener en cuenta que pueden haber mas de uno por lo tanto se debe llenar el arreglo con los *Id* de los canales que desean recibir las actualizaciones:
-```json
+```js
+//config.json
 {
-...
-  "updateChannels: [
-    "12345678"
+//...
+  "updateChannels": [
+    "12345678",
+    "12344556"
   ]
-...
+//...
 }
 ```
 En este momento esta "quemada" la forma de leer las actualizaciones a leer el HTML de la página en cuestion y buscar utilizando los elementos y clases css para encontrar las actualizaciones. Si se desea cambiar la funcionalidad se debe modificar el método `parse` en el archivo `app/updates.py` a que lea correctamente el HTML correspondiente a la página que se desea escanear.
