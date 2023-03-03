@@ -97,7 +97,11 @@ def _getDescription(link):
     if not div:
         return ""
 
-    return div.find("p").text.strip()
+    p = div.find("p")
+    if not p:
+        return ""
+
+    return p.text.strip()
 
 
 def _hash_string(string) -> int:

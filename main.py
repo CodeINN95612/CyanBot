@@ -80,8 +80,12 @@ async def checkUpdates():
     while not client.is_ready():
         await asyncio.sleep(1)
     while True:
-        await updates.checkUpdates(handler=_updateHandler)
-        await asyncio.sleep(config.config["updateDelay"])
+        try:
+            await updates.checkUpdates(handler=_updateHandler)
+            await asyncio.sleep(config.config["updateDelay"])
+        except e:
+            print("ERROR: ", e)
+
 
 
 async def runBot():
