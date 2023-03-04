@@ -72,19 +72,21 @@ async def _makeNew(args: CmdArgs):
 
 
 async def _cmdStats(args: CmdArgs):
-    # return
 
     msg = args[0].split(" ")
     discordMessage = args[1]
 
     data = storage.getMessages()
+    data = [p for p in data if p["serverId"] == str(discordMessage.guild.id)]
     roles = config.config["roles"]
 
     # Globales
     if len(msg) == 1:
-        stats1, stats2, stats3 = st.parseGlobalStats(data)
+        stats = st.parseGlobalStats(data)
 
-        text = f"```{_intoTabulate(stats1)}```\n ```{_intoTabulate(stats2)}```\n ```{_intoTabulate(stats3)}```\n "
+        text = ""
+        for stat in stats:
+            text += f"```{_intoTabulate(stat)}```\n"
 
         embed = discord.Embed(title="Estadísticas globales", color=0x0000ff,
                               description=text)

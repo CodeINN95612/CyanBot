@@ -87,7 +87,6 @@ async def checkUpdates():
             print("ERROR: ", e)
 
 
-
 async def runBot():
     await client.start(config.config["token"])
 

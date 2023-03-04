@@ -1,11 +1,12 @@
 from . import config, storage
 from bs4 import BeautifulSoup as bs
-import requests
+import aiohttp
 import hashlib
+import re
 
 
 async def checkUpdates(handler):
-    updates = _getUpdates()
+    updates = await _getUpdates()
     series = storage.getSeries()
     for update in updates:
         sId = update["sId"]
@@ -15,15 +16,16 @@ async def checkUpdates(handler):
                 continue
 
         # Description takes more time so we only grab it if needed
-        update["description"] = _getDescription(update["sLink"])
+        update["description"] = await _getDescription(update["sLink"])
 
         storage.upsertSerie(sId, chId)
         await handler(update)
 
 
-def _getUpdates():
+async def _getUpdates():
+
     link = config.config["updateLink"]
-    html = requests.get(link, verify=False).text
+    html = await _fetchHtml(link)
     soup = bs(html, "html.parser")
     divs = soup.find_all("div", class_="col-6 col-sm-6 col-md-6 col-xl-3")
 
@@ -89,8 +91,8 @@ def getUpdateEmbed(update):
     return template
 
 
-def _getDescription(link):
-    html = requests.get(link, verify=False).text
+async def _getDescription(link):
+    html = await _fetchHtml(link)
     soup = bs(html, "html.parser")
 
     div = soup.find("div", class_="summary__content")
@@ -118,3 +120,18 @@ def _hash_string(string) -> int:
     num = int(hex_dig, 16)
 
     return num
+
+
+async def _fetchHtml(link):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(link) as response:
+            content_type = response.headers.get('Content-Type', '')
+            charset_match = re.search(r'charset=(\S+)', content_type)
+            if charset_match:
+                charset = charset_match.group(1)
+                html_bytes = await response.read()
+                html_string = html_bytes.decode(charset)
+                return html_string
+            else:
+                html_bytes = await response.read()
+                return html_bytes.decode(errors='replace')

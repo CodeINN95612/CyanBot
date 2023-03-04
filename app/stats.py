@@ -3,17 +3,13 @@ from . import storage, config
 
 
 def parseGlobalStats(data):
-    h1 = ['Type', '30 Days', 'All-time']
-    h2 = ['Users (30 Days)']
-    h3 = ['User (All)']
     roles = config.config["roles"]
-    for role in roles:
-        h2.append(role["name"])
-        h3.append(role["name"])
-
     today = datetime.datetime.today()
     past = today - datetime.timedelta(days=30)
 
+    gstats = []
+
+    h1 = ['Type', '30 Days', 'All-time']
     stats1 = {}
     for msg in data:
         role = msg["function"]
@@ -23,40 +19,27 @@ def parseGlobalStats(data):
         if date >= past:
             stats1[role]["30"] += 1
         stats1[role]["total"] += 1
+    gstats.append((h1, stats1))
 
-    stats2 = {}
-    for msg in data:
-        userId = msg["authorId"]
-        user = msg["authorName"]
-        if userId not in stats2:
-            stats2[userId] = {"name": user}
-            for role in roles:
-                stats2[userId][role["name"]] = 0
-        date = datetime.datetime.fromtimestamp(msg["date"])
-        if date >= past:
-            stats2[userId][msg["function"]] += 1
+    for role in [role["name"] for role in roles]:
+        h = ["User", f"{role} 30 Days", f"{role} (All)"]
+        stats = {}
+        for msg in [msg for msg in data if msg["function"].lower() == role.lower()]:
+            userId = msg["authorId"]
+            user = msg["authorName"]
+            if userId not in stats:
+                stats[userId] = {"name": user,
+                                 f"{role}_30": 0, f"{role}_all": 0}
+            date = datetime.datetime.fromtimestamp(msg["date"])
+            if date >= past:
+                stats[userId][f"{role}_30"] += 1
+            stats[userId][f"{role}_all"] += 1
+        gstats.append((h, stats))
 
-    stats3 = {}
-    for msg in data:
-        userId = msg["authorId"]
-        user = msg["authorName"]
-        if userId not in stats3:
-            stats3[userId] = {"name": user}
-            for role in roles:
-                stats3[userId][role["name"]] = 0
-        stats3[userId][msg["function"]] += 1
+    gstats = [(stat[0], _toArr(stat[1])) for stat in gstats]
+    gstats = [(stat[0], _addTotal(stat[1])) for stat in gstats]
 
-    # transformar a arreglos
-    stats1 = _toArr(stats1)
-    stats2 = _toArr(stats2)
-    stats3 = _toArr(stats3)
-
-    # Agregar Totales
-    stats1 = _addTotal(stats1)
-    stats2 = _addTotal(stats2)
-    stats3 = _addTotal(stats3)
-
-    return (h1, stats1), (h2, stats2), (h3, stats3)
+    return gstats
 
 
 def parseRoleStats(data, role):
