@@ -109,7 +109,12 @@ def _validateMessage(message):
     words = content.split()
     words = [word for word in words if '@' not in word]
 
-    if len(words) < 3 or not words[-1].isnumeric():
+    if len(words) < 3:
+        return (False, {})
+
+    try:
+        numbers = float(words[-1])
+    except:
         return (False, {})
 
     role_name = words[-2]
@@ -126,7 +131,7 @@ def _validateMessage(message):
         "date": message["date"],
         "serie": " ".join(words[:-2]),
         "function": role_values[0],
-        "chapter": int(words[-1])
+        "chapter": numbers
     })
 
 

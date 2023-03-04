@@ -36,8 +36,9 @@ def parseGlobalStats(data):
             stats[userId][f"{role}_all"] += 1
         gstats.append((h, stats))
 
-    gstats = [(stat[0], _toArr(stat[1])) for stat in gstats]
-    gstats = [(stat[0], _addTotal(stat[1])) for stat in gstats]
+    gstats = [(h, _toArr(stat)) for h, stat in gstats]
+    gstats = [(h, _addTotal(stat)) for h, stat in gstats]
+    gstats = [(h, _parseIfEmpty(h, stat)) for h, stat in gstats]
 
     return gstats
 
@@ -64,6 +65,7 @@ def parseRoleStats(data, role):
 
     stats = _toArr(stats)
     stats = _addTotal(stats)
+    stats = _parseIfEmpty(h, stats)
 
     return (h, stats)
 
@@ -92,6 +94,7 @@ def parseUserStats(data, id):
         stats1[role]["total"] += 1
     stats1 = _toArr(stats1)
     stats1 = _addTotal(stats1)
+    stats1 = _parseIfEmpty(h1, stats1)
 
     stats2 = {}
     for role in config.config["roles"]:
@@ -128,4 +131,10 @@ def _toArr(stats):
 
 def _addTotal(stats):
     stats.append(["Total"] + [sum(col) for col in list(zip(*stats))[1:]])
+    return stats
+
+
+def _parseIfEmpty(h, stats):
+    if len(stats) == 1:
+        stats[0] = ['Total' if i == 0 else '0' for (i, _) in enumerate(h)]
     return stats
