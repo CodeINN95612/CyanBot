@@ -19,6 +19,8 @@ def parseGlobalStats(data):
         if date >= past:
             stats1[role]["30"] += 1
         stats1[role]["total"] += 1
+    stats1 = dict(
+        sorted(stats1.items(), key=lambda x: x[1]['30'], reverse=True))
     gstats.append((h1, stats1))
 
     for role in [role["name"] for role in roles]:
@@ -34,6 +36,8 @@ def parseGlobalStats(data):
             if date >= past:
                 stats[userId][f"{role}_30"] += 1
             stats[userId][f"{role}_all"] += 1
+        stats = dict(
+            sorted(stats.items(), key=lambda x: x[1][f'{role}_30'], reverse=True))
         gstats.append((h, stats))
 
     gstats = [(h, _toArr(stat)) for h, stat in gstats]
@@ -63,6 +67,7 @@ def parseRoleStats(data, role):
             stats[userId]["30"] += 1
         stats[userId]["total"] += 1
 
+    stats = dict(sorted(stats.items(), key=lambda x: x[1]['30']))
     stats = _toArr(stats)
     stats = _addTotal(stats)
     stats = _parseIfEmpty(h, stats)
@@ -92,6 +97,9 @@ def parseUserStats(data, id):
         if date >= past:
             stats1[role]["30"] += 1
         stats1[role]["total"] += 1
+
+    stats1 = dict(
+        sorted(stats1.items(), key=lambda x: x[1]['30'], reverse=True))
     stats1 = _toArr(stats1)
     stats1 = _addTotal(stats1)
     stats1 = _parseIfEmpty(h1, stats1)
@@ -116,6 +124,8 @@ def parseUserStats(data, id):
         stats2[role]["serie"] = serie
         stats2[role]["cap"] = msg["chapter"]
 
+    stats2 = dict(
+        sorted(stats2.items(), key=lambda x: float("inf") if x[1]["daysAgo"] == "" else float(x[1]["daysAgo"]), reverse=False))
     stats2 = _toArr(stats2)
 
     return (h1, stats1), (h2, stats2)
