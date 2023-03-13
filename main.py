@@ -83,8 +83,9 @@ async def checkUpdates():
         try:
             await updates.checkUpdates(handler=_updateHandler)
             await asyncio.sleep(config.config["updateDelay"])
-        except e:
-            print("ERROR: ", e)
+        except:
+            print(
+                "ERROR: No se puede actualizar, revise la disponibilidad de la pagina o el html")
 
 
 async def runBot():
