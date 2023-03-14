@@ -1,4 +1,4 @@
-from . import config, globals
+from . import config, globals, storage
 import os
 import json
 import datetime
@@ -19,6 +19,10 @@ async def setUp():
 
     if not os.path.exists(globals.MSG_FILE):
         with open(globals.MSG_FILE, 'w') as f:
+            json.dump([], f)
+
+    if not os.path.exists(globals.ALLOWED_FILE):
+        with open(globals.ALLOWED_FILE, 'w') as f:
             json.dump([], f)
 
 
@@ -90,6 +94,23 @@ def upsertSerie(sId, chId):
         json.dump(dataFile, f, indent=4)
 
 
+def addAllowed(name):
+    with open(globals.ALLOWED_FILE, 'r') as f:
+        dataFile = json.load(f)
+
+    dataFile.append(name)
+
+    with open(globals.ALLOWED_FILE, 'w') as f:
+        json.dump(dataFile, f, indent=4)
+
+
+def isAllowed(name):
+    with open(globals.ALLOWED_FILE, 'r') as f:
+        dataFile = json.load(f)
+
+    return name in [s.lower() for s in dataFile]
+
+
 def _validateMessages(messages):
 
     valid_messages = []
@@ -122,6 +143,10 @@ def _validateMessage(message):
                    for r in config.config["roles"] if r['name'].lower() == role_name]
 
     if len(role_values) == 0:
+        return (False, {})
+
+    serie = " ".join(words[:-2])
+    if not storage.isAllowed(serie):
         return (False, {})
 
     return (True, {

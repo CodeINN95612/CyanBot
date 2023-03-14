@@ -17,6 +17,8 @@ async def manage_commands(args: CmdArgs):
             await _cmdUpdate(args)
         elif msg.startswith("st"):
             await _cmdStats(args)
+        elif msg.startswith("al"):
+            await _cmdAllow(args)
 
         return
 
@@ -31,7 +33,8 @@ async def _cmdHelp(args: CmdArgs):
         name="update", value="Obtener las actualizaciones de trabajos de este mes", inline=True)
     embed.add_field(
         name="stats [user/userID/role]", value="En caso de enviar sin parametro envia estadisticas globales, sino envia las estadisticas del usuario o del rol", inline=True)
-
+    embed.add_field(name="allow <serie>",
+                    value="Users can now submit series with that name")
     await args[1].reply(embed=embed)
 
 
@@ -132,3 +135,17 @@ async def _cmdStats(args: CmdArgs):
 def _intoTabulate(stats):
     headers, data = stats
     return tabulate(data, headers=headers, tablefmt="fancy_grid")
+
+
+async def _cmdAllow(args: CmdArgs):
+    msg, dm, *_ = args
+    msg = msg.split(" ")
+    if len(msg) == 1:
+        await _cmdHelp(args)
+        return
+
+    serie = " ".join(msg[1::]).lower()
+
+    if not storage.isAllowed(serie):
+        storage.addAllowed(serie)
+    await dm.reply(f"Added '{serie}' to allowed series")

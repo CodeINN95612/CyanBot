@@ -6,6 +6,10 @@ import re
 
 
 async def checkUpdates(handler):
+
+    if not config.config["doUpdate"]:
+        return
+
     updates = await _getUpdates()
     series = storage.getSeries()
     for update in updates:

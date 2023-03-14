@@ -35,6 +35,7 @@ def reload():
             "submitChannel": "",
             "adminChannel": "",
             "testChannel": "",
+            "doUpdate": True,
             "updateChannels": [
                 ""
             ],
