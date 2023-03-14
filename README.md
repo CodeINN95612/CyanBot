@@ -45,7 +45,7 @@ Se debe llenar el archivo 'data/config.json' que fue creado (o crearlo) y debe s
     "submitChannel": "",
     "testChannel": "",
     "adminChannel": "",
-    "onUpdate": true,
+    "doUpdate": true,
     "updateChannels": [
     ],
     "admins": [
