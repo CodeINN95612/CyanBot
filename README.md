@@ -1,6 +1,9 @@
 # CyanBot
 Un bot creado para guardar rabajos relizados por usuarios de discord.
-  
+
+> **Warning**
+> Este branch no es master / main!.
+
 ## ¿Qué Hace?
 Este bot, por el momento, cumple estas funcionalidades:
 - Actualizar un canal de discord con los últimos mangas subidas al link en `config.json`.

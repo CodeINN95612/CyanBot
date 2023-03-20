@@ -31,8 +31,8 @@ async def _getUpdates():
     link = config.config["updateLink"]
     html = await _fetchHtml(link)
     soup = bs(html, "html.parser")
-    divs = soup.find_all("div", class_="col-6 col-sm-6 col-md-6 col-xl-3")
 
+    divs = soup.find_all("div", class_="col-6 col-sm-6 col-md-6 col-xl-3")
     updateList = []
     for div in divs:
         parsed = _parseDiv(div)
