@@ -7,7 +7,7 @@ from tabulate import tabulate
 
 async def manage_commands(args: CmdArgs):
 
-    msg, discordMessage, userId, isCommand, _, isSubmit, isAdmin = args
+    msg, _, userId, isCommand, _, isSubmit, isAdmin = args
 
     if isCommand and isAdmin and userId in config.config["admins"]:
 
@@ -27,14 +27,14 @@ async def manage_commands(args: CmdArgs):
 
 
 async def _cmdHelp(args: CmdArgs):
-    embed = discord.Embed(title="Lista de Ayuda", color=0x0000ff)
-    embed.add_field(name="help", value="Comando de Ayuda", inline=True)
+    embed = discord.Embed(title="Lista de ajuda", color=0x0000ff)
+    embed.add_field(name="help", value="Comando de ajuda", inline=True)
     embed.add_field(
-        name="update", value="Obtener las actualizaciones de trabajos de este mes", inline=True)
+        name="update", value="Receba as atualizações de empregos deste mês", inline=True)
     embed.add_field(
-        name="stats [user/userID/role]", value="En caso de enviar sin parametro envia estadisticas globales, sino envia las estadisticas del usuario o del rol", inline=True)
+        name="stats [user/userID/role]", value="No caso de envio sem parâmetro, envia estatísticas globais, mas envia as estatísticas do usuário ou da função", inline=True)
     embed.add_field(name="allow <serie>",
-                    value="Users can now submit series with that name")
+                    value="Os usuários agora podem enviar séries com esse nome")
     await args[1].reply(embed=embed)
 
 
@@ -42,7 +42,7 @@ async def _cmdUpdate(args: CmdArgs):
     date = datetime.datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
     filename = config.config["updateSpreadsheetName"]
     file = storage.IntoSpreadsheet(args[1], f"{filename}_{date}.xlsx")
-    await args[1].reply(content=f"Archivo de trabajos {date}", file=file)
+    await args[1].reply(content=f"Arquivo de trabalho {date}", file=file)
 
 
 async def _makeNew(args: CmdArgs):
@@ -64,14 +64,14 @@ async def _makeNew(args: CmdArgs):
 
     testChannel = discordClient.get_channel(int(config.config["testChannel"]))
     if testChannel:
-        await testChannel.send(f"Insertando Mensaje ```{args[0]}```")
+        await testChannel.send(f"Inserindo Mensagem ```{args[0]}```")
 
     valid = storage.insertMessage(data)
 
     if not valid and testChannel:
-        await testChannel.send(f"Mensaje no insertado")
+        await testChannel.send(f"Mensagem não inserida")
     elif testChannel:
-        await testChannel.send(f"Mensaje insertado")
+        await testChannel.send(f"Mensagem incorporada")
 
 
 async def _cmdStats(args: CmdArgs):
@@ -91,7 +91,7 @@ async def _cmdStats(args: CmdArgs):
         for stat in stats:
             text += f"```{_intoTabulate(stat)}```\n"
 
-        embed = discord.Embed(title="Estadísticas globales", color=0x0000ff,
+        embed = discord.Embed(title="Estatísticas globais", color=0x0000ff,
                               description=text)
         await discordMessage.reply(embed=embed)
 
@@ -104,7 +104,7 @@ async def _cmdStats(args: CmdArgs):
         role = param
         stats = st.parseRoleStats(data, role)
         text = f"```{_intoTabulate(stats)}```"
-        embed = discord.Embed(title=f"Estadísticas del rol {role}", color=0x0000ff,
+        embed = discord.Embed(title=f"estatísticas de função {role}", color=0x0000ff,
                               description=text)
         await discordMessage.reply(embed=embed)
         return
@@ -121,13 +121,13 @@ async def _cmdStats(args: CmdArgs):
 
     if userId == 0:
         embed = discord.Embed(
-            title="Not found", description=f"No se encontro el usuario {userName}", color=0xff0000)
+            title="Not found", description=f"Usuário não encontrado {userName}", color=0xff0000)
         await discordMessage.reply(embed=embed)
         return
 
     stats1, stats2 = st.parseUserStats(data, userId)
     text = f"```{_intoTabulate(stats1)}```\n ```{_intoTabulate(stats2)}```\n"
-    embed = discord.Embed(title=f"Estadísticas del usuario {userName}", color=0x0000ff,
+    embed = discord.Embed(title=f"Estatísticas do usuário {userName}", color=0x0000ff,
                           description=text)
     await discordMessage.reply(embed=embed)
 
@@ -148,4 +148,4 @@ async def _cmdAllow(args: CmdArgs):
 
     if not storage.isAllowed(serie):
         storage.addAllowed(serie)
-    await dm.reply(f"Added '{serie}' to allowed series")
+    await dm.reply(f"Adicionado '{serie}' às séries permitidas")

@@ -9,7 +9,7 @@ client = discord.Client(intents=discord.Intents.all())
 
 @client.event
 async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+    print(f'{client.user} se conectou ao Discord!')
 
     testChannel = client.get_channel(int(config.config["testChannel"]))
     if testChannel:
@@ -85,7 +85,7 @@ async def checkUpdates():
             await asyncio.sleep(config.config["updateDelay"])
         except:
             print(
-                "ERROR: No se puede actualizar, revise la disponibilidad de la pagina o el html")
+                "ERRO: Não é possível atualizar, verifique a disponibilidade da página ou do html")
 
 
 async def runBot():

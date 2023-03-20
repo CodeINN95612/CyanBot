@@ -31,7 +31,7 @@ async def scanMessages(discordClient: discord.Client):
     scanDays = config.config["scanDays"]
     testChannel = discordClient.get_channel(int(config.config["testChannel"]))
     if testChannel:
-        await testChannel.send(f"Escaneando mensajes de los pasados {scanDays} dias")
+        await testChannel.send(f"Verificando mensagens dos últimos {scanDays} dias")
 
     messages = []
 
@@ -63,7 +63,7 @@ async def scanMessages(discordClient: discord.Client):
     _parseOverwriteMessages(validMessages, globals.MSG_FILE)
 
     if testChannel:
-        await testChannel.send(f"Escaneados {len(validMessages)} mensajes")
+        await testChannel.send(f"{len(validMessages)} mensagens verificadas")
 
 
 def getMessages():
@@ -239,15 +239,15 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
     titulo_formato.alignment = Alignment(
         horizontal="center", vertical="center", wrap_text=True)
 
-    ws["A1"] = "FECHA DE CORTE:"
+    ws["A1"] = "DATE:"
     ws["B1"] = now.strftime("%d-%m-%Y")
 
     filaInicial = 4
 
-    headers = ["Id Usuario", "Usuario", "Trabajos Totales", "Monto Total"]
+    headers = ["User ID", "User", "Total Quantity", "Total Value"]
     for role in config.config["roles"]:
-        headers.append("Cantidad " + role["name"])
-        headers.append("Valor " + role["name"])
+        headers.append("Q." + role["name"])
+        headers.append("V. " + role["name"])
 
     for i, header in enumerate(headers, start=1):
         cell = ws.cell(row=filaInicial, column=i, value=header)

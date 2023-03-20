@@ -32,7 +32,7 @@ async def _getUpdates():
     html = await _fetchHtml(link)
     soup = bs(html, "html.parser")
 
-    divs = soup.find_all("div", class_="col-6 col-sm-6 col-md-6 col-xl-3")
+    divs = soup.find_all("div", class_="col-6 col-md-2 badge-pos-2")
     updateList = []
     for div in divs:
         parsed = _parseDiv(div)
@@ -54,16 +54,16 @@ def _parseDiv(dv):
         "description": ""
     }
 
-    linkAGroup = dv.find("a", class_="series-link")
+    linkAGroup = dv.find("h3", class_="h5").find("a")
     ret["sLink"] = linkAGroup["href"].strip()
-    ret["sName"] = linkAGroup["title"].strip()
-    img = linkAGroup.find("img")
-    ret["cover"] = img["data-src"]
+    ret["sName"] = linkAGroup.text.strip()
     ret["sId"] = str(_hash_string(ret["sName"]))
 
-    chapters = dv.find("div", class_="series-content").find_all("a")
-    chapter = chapters[0]
-    chapterStr = chapter.find("span", "series-badge").text.strip()
+    img = dv.find("img")
+    ret["cover"] = img["src"]
+
+    chapter = dv.find("a", class_="btn-link")
+    chapterStr = chapter.text.strip()
     ret["chNum"] = chapterStr.split(" ")[1]
     ret["chId"] = str(_hash_string(chapterStr))
     ret["chLink"] = chapter["href"]
@@ -89,7 +89,7 @@ def getUpdateEmbed(update):
     template['url'] = update['chLink']
     desc = update["description"]
     template[
-        'description'] = f"💥 Aqui una nueva actualización 💥 ¡Revisenla en nuestra página oficial! \n \n {desc}"
+        'description'] = f"💥 Aqui está uma nova atualização 💥 Confira em nossa página oficial! \n \n {desc}"
     template['image']['url'] = update['cover']
     template['fields'][0]['value'] = f"[[Capítulo]]({update['chLink']}) • [[Serie]]({update['sLink']})"
     return template
@@ -99,15 +99,16 @@ async def _getDescription(link):
     html = await _fetchHtml(link)
     soup = bs(html, "html.parser")
 
-    div = soup.find("div", class_="summary__content")
+    div = soup.find("div", class_="manga-excerpt")
     if not div:
         return ""
 
-    p = div.find("p")
-    if not p:
-        return ""
+    desc = ""
+    ps = div.find_all("p")
+    for p in ps:
+        desc += p.text + "\n"
 
-    return p.text.strip()
+    return desc.strip()
 
 
 def _hash_string(string) -> int:

@@ -49,8 +49,8 @@ def reload():
                 }
             ]
         }
-        print("El archivo de configuración no existe.")
-        print("Por favor llena el archivo 'config.json' que fue creado con los valores correspondientes:")
+        print("O arquivo de configuração não existe.")
+        print("Por favor, preencha o arquivo 'config.json' que foi criado com os valores correspondentes:")
         print(template)
         create_config(template)
         exit(0)

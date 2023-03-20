@@ -1,8 +1,8 @@
 # CyanBot
 Un bot creado para guardar rabajos relizados por usuarios de discord.
 
-> **Warning**
-> Este branch no es master / main!.
+> **Warning**  
+> Este branch no es master / main!.  Sus textos se encuentran en portugues
 
 ## ¿Qué Hace?
 Este bot, por el momento, cumple estas funcionalidades:
