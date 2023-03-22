@@ -1,11 +1,8 @@
-from . import config, globals, storage
+from . import config, globals, storage, stylesheet as ss
 import os
 import json
 import datetime
 import discord
-
-import openpyxl
-from openpyxl.styles import Font, Border, Side, PatternFill, Alignment
 
 
 async def setUp():
@@ -111,6 +108,12 @@ def isAllowed(name):
     return name in [s.lower() for s in dataFile]
 
 
+def getAllowed():
+    with open(globals.ALLOWED_FILE, 'r') as f:
+        dataFile = json.load(f)
+    return [s.lower() for s in dataFile]
+
+
 def _validateMessages(messages):
 
     valid_messages = []
@@ -200,8 +203,6 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
 
     # construir nueva data
     data = {}
-    def numColName(n: str) -> str: return f"num_{n}"
-    def valColName(n: str) -> str: return f"val_{n}"
     for msg in messages:
         id = msg["authorId"]
         if id not in data:
@@ -212,8 +213,8 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
             }
             for role in config.config["roles"]:
                 role = role["name"]
-                data[id][valColName(role)] = 0.0
-                data[id][numColName(role)] = 0
+                data[id][ss.valColName(role)] = 0.0
+                data[id][ss.numColName(role)] = 0
 
         role = [role for role in config.config["roles"]
                 if role["name"].lower() == msg["function"].lower()][0]
@@ -221,67 +222,16 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
         roleValue = role["value"]
         data[id]["totalWork"] += 1
         data[id]["totalValue"] += roleValue
-        data[id][valColName(roleName)] += roleValue
-        data[id][numColName(roleName)] += 1
+        data[id][ss.valColName(roleName)] += roleValue
+        data[id][ss.numColName(roleName)] += 1
 
-    # Spreadsheet
+    # Archivo de Excel
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Crear un objeto de formato para el título de la columna
-    titulo_formato = openpyxl.styles.NamedStyle(name="titulo_formato")
-    titulo_formato.font = Font(bold=True, size=14)
-    titulo_formato.fill = PatternFill(
-        start_color="FFCC99", end_color="FFCC99", fill_type="solid")
-    titulo_formato.border = Border(left=Side(style="thin"), right=Side(
-        style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
-    titulo_formato.alignment = Alignment(
-        horizontal="center", vertical="center", wrap_text=True)
-
-    ws["A1"] = "DATE:"
-    ws["B1"] = now.strftime("%d-%m-%Y")
-
-    filaInicial = 4
-
-    headers = ["User ID", "User", "Total Quantity", "Total Value"]
-    for role in config.config["roles"]:
-        headers.append("Q." + role["name"])
-        headers.append("V. " + role["name"])
-
-    for i, header in enumerate(headers, start=1):
-        cell = ws.cell(row=filaInicial, column=i, value=header)
-        cell.style = titulo_formato
-        cell.alignment = openpyxl.styles.Alignment(
-            wrapText=True, horizontal='center', vertical='center')
-        ws.column_dimensions[cell.column_letter].width = 20
-
-    for i, id in enumerate(data, start=1):
-        row = i + filaInicial
-        cell = data[id]
-        ws.cell(row=row, column=1, value=id)
-        ws.cell(row=row, column=2, value=cell["author"])
-        ws.cell(row=row, column=3, value=cell["totalWork"])
-        ws.cell(row=row, column=4, value=cell["totalValue"])
-        col = 5
-        for role in config.config["roles"]:
-            roleName = role["name"]
-            ws.cell(row=row, column=col, value=cell[numColName(roleName)])
-            col += 1
-            ws.cell(row=row, column=col, value=cell[valColName(roleName)])
-            col += 1
-
-    # Aplicar bordes
-    for row in ws.iter_rows(min_row=1, min_col=1, max_col=25):
-        for cell in row:
-            if cell.value:
-                cell.border = titulo_formato.border
-
-    # Guardar archivo de Excel
     archivo = "./data/" + config.config["updateSpreadsheetName"] + '.xlsx'
-    wb.save(archivo)
 
-    # Enviar archivo como mensaje embebido en Discord
+    ss.createWorkbook(
+        archivo, data, config.config["roles"], storage.getAllowed(), now)
+
     with open(archivo, 'rb') as f:
         file = discord.File(f, filename=filename)
     return file
