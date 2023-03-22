@@ -1,4 +1,4 @@
-from . import config, globals, storage, stylesheet as ss
+from . import config, globals, spreadsheet as ss, storage
 import os
 import json
 import datetime
@@ -137,11 +137,11 @@ def _validateMessage(message):
         return (False, {})
 
     try:
-        numbers = float(words[-1])
+        numbers = float(words[-2])
     except:
         return (False, {})
 
-    role_name = words[-2]
+    role_name = words[-1]
     role_values = [r['name']
                    for r in config.config["roles"] if r['name'].lower() == role_name]
 
@@ -209,7 +209,8 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
             data[id] = {
                 "author": msg["authorName"],
                 "totalWork": 0,
-                "totalValue": 0.0
+                "totalValue": 0.0,
+                "roles": ""
             }
             for role in config.config["roles"]:
                 role = role["name"]
@@ -224,6 +225,7 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
         data[id]["totalValue"] += roleValue
         data[id][ss.valColName(roleName)] += roleValue
         data[id][ss.numColName(roleName)] += 1
+        data[id]["roles"] += roleName if data[id]["roles"] == "" else f" - {roleName}"
 
     # Archivo de Excel
 

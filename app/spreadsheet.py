@@ -36,14 +36,20 @@ def _addData(wb, data, date):
 
     filaInicial = 4
 
-    headers = ["#", "User ID", "User", "Total Quantity", "Total Value"]
+    headers = ["#", "User ID", "User",
+               "Total Quantity", "Total Value", "Roles"]
     for role in config.config["roles"]:
-        headers.append("Q." + role["name"])
-        headers.append("V. " + role["name"])
+        headers.append(role["name"])
+        # headers.append("V. " + role["name"])
 
     for i, header in enumerate(headers, start=1):
         cell = ws.cell(row=filaInicial, column=i, value=header)
-        _styleHeaderNormal(cell)
+        if (header == "Total Quantity"):
+            _styleHeaderGreen(cell)
+        elif (header == "Total Value"):
+            _styleHeaderRed(cell)
+        else:
+            _styleHeaderNormal(cell)
         cell.alignment = openpyxl.styles.Alignment(
             wrapText=True, horizontal='center', vertical='center')
         ws.column_dimensions[cell.column_letter].width = 10 if i == 1 else 20
@@ -59,7 +65,8 @@ def _addData(wb, data, date):
                              value=cell["totalWork"])).number_format = numbers.FORMAT_NUMBER
         _styleNormal(ws.cell(row=row, column=5,
                              value=cell["totalValue"])).number_format = numbers.FORMAT_CURRENCY_USD
-        col = 6
+        _styleNormal(ws.cell(row=row, column=6, value=cell["roles"]))
+        col = 7
         for role in config.config["roles"]:
             roleName = role["name"]
 
@@ -68,10 +75,10 @@ def _addData(wb, data, date):
             _styleNormal(cellr).number_format = numbers.FORMAT_NUMBER
             col += 1
 
-            cellr = ws.cell(row=row, column=col,
-                            value=cell[valColName(roleName)])
-            _styleNormal(cellr).number_format = numbers.FORMAT_CURRENCY_USD
-            col += 1
+            # cellr = ws.cell(row=row, column=col,
+            #                 value=cell[valColName(roleName)])
+            # _styleNormal(cellr).number_format = numbers.FORMAT_CURRENCY_USD
+            # col += 1
 
 
 def _addRoles(wb, roles):
@@ -131,8 +138,9 @@ GREEN = '006400'
 BLUE = '1E90FF'
 BLACK = '000000'
 LIGHT_GREEN = '90EE90'
-LIGHT_BLUE = 'ADD8E6'
+LIGHT_BLUE = 'B7DEE8'
 LIGHT_GRAY = 'D3D3D3'
+PINK = 'FFD9D9'
 WHITE_SMOKE = 'F5F5F5'
 WHITE = 'FFFFFF'
 BLACK = '000000'
@@ -161,5 +169,15 @@ def _styleNormal(cell):
 
 
 def _styleHeaderNormal(cell):
-    return _styleCell(cell, LILA, 14, BLACK, True)
+    _styleCell(cell, LILA, 14, BLACK, True)
+    return cell
+
+
+def _styleHeaderGreen(cell):
+    _styleCell(cell, LIGHT_GREEN, 14, BLACK, True)
+    return cell
+
+
+def _styleHeaderRed(cell):
+    _styleCell(cell, LIGHT_BLUE, 14, BLACK, True)
     return cell
