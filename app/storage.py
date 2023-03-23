@@ -105,13 +105,20 @@ def isAllowed(name):
     with open(globals.ALLOWED_FILE, 'r') as f:
         dataFile = json.load(f)
 
-    return name in [s.lower() for s in dataFile]
+    return name.lower() in [s.lower() for s in dataFile]
 
 
 def getAllowed():
     with open(globals.ALLOWED_FILE, 'r') as f:
         dataFile = json.load(f)
     return [s.lower() for s in dataFile]
+
+
+def getAllowedRealName(loweredName):
+    with open(globals.ALLOWED_FILE, 'r') as f:
+        dataFile = json.load(f)
+    name = [s for s in dataFile if s.lower() == loweredName.lower()][0]
+    return name
 
 
 def _validateMessages(messages):
@@ -151,13 +158,14 @@ def _validateMessage(message):
     serie = " ".join(words[:-2])
     if not storage.isAllowed(serie):
         return (False, {})
+    serie = storage.getAllowedRealName(serie)
 
     return (True, {
         "serverId": message["serverId"],
         "authorId": message["authorId"],
         "authorName": message["authorName"],
         "date": message["date"],
-        "serie": " ".join(words[:-2]),
+        "serie": serie,
         "function": role_values[0],
         "chapter": numbers
     })
@@ -225,7 +233,10 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
         data[id]["totalValue"] += roleValue
         data[id][ss.valColName(roleName)] += roleValue
         data[id][ss.numColName(roleName)] += 1
-        data[id]["roles"] += roleName if data[id]["roles"] == "" else f" - {roleName}"
+        if data[id]["roles"] == "":
+            data[id]["roles"] = roleName
+        elif not roleName in data[id]["roles"].split():
+            data[id]["roles"] += f" - {roleName}"
 
     # Archivo de Excel
 

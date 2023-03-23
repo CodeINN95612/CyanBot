@@ -33,12 +33,13 @@ async def on_message(message: discord.Message):
     isCommand = message.content.startswith(config.config['prefix'])
     index = 1 if isCommand else 0
     wordArray = [word for word in message.content.split() if "@" not in word]
-    msg = " ".join(wordArray)[index::].lower()
+    msgCase = " ".join(wordArray)[index::]
+    msg = msgCase.lower()
     userId = str(message.author.id)
 
     # Make developer life easier by separating the discord message
     args: CmdArgs = (msg, message, userId, isCommand,
-                     client, isSubmit, isAdmin)
+                     client, isSubmit, isAdmin, msgCase)
 
     await cmd.manage_commands(args)
 

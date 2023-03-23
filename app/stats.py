@@ -67,7 +67,8 @@ def parseRoleStats(data, role):
             stats[userId]["30"] += 1
         stats[userId]["total"] += 1
 
-    stats = dict(sorted(stats.items(), key=lambda x: x[1]['30']))
+    stats = dict(
+        sorted(stats.items(), key=lambda x: x[1]['30'], reverse=True))
     stats = _toArr(stats)
     stats = _addTotal(stats)
     stats = _parseIfEmpty(h, stats)

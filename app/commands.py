@@ -7,7 +7,7 @@ from tabulate import tabulate
 
 async def manage_commands(args: CmdArgs):
 
-    msg, _, userId, isCommand, _, isSubmit, isAdmin = args
+    msg, _, userId, isCommand, _, isSubmit, isAdmin, _ = args
 
     if isCommand and isAdmin and userId in config.config["admins"]:
 
@@ -138,13 +138,13 @@ def _intoTabulate(stats):
 
 
 async def _cmdAllow(args: CmdArgs):
-    msg, dm, *_ = args
-    msg = msg.split(" ")
+    _, dm, *_, msgCase = args
+    msg = msgCase.split(" ")
     if len(msg) == 1:
         await _cmdHelp(args)
         return
 
-    serie = " ".join(msg[1::]).lower()
+    serie = " ".join(msg[1::])
 
     if not storage.isAllowed(serie):
         storage.addAllowed(serie)
