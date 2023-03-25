@@ -110,7 +110,10 @@ Ejemplo:
 ```
 Mi amiga es un monstruo TS 45. 
 ```
-Estos trabajos son almacenados en el archivo "data/msg.json".
+Estos trabajos son almacenados en el archivo `data/msg.json`.
+
+### Eliminar Trabajos
+Si durante la ejecución del bot, se sube un trabajo y luego se elimina el mensaje. El trabajo también será eliminado.
 
 ### Testeo
 Si se incluye la *Id* de un canal de testeo en `testChannel` del archivo `data/config.json`, en ese canal se imprimiran cosas ligeramente importantes o que se consideren necesarias, por ejemplo si un usuario trata de subir un trabajo, en este canal se mostrará lo que se está almacenando en el archivo de mensajes y además si cumple el formato necesario, de no cumplir el formato necesario, menciona que "no se insertará el trabajo". Este canal solo debería ser visible por admins para validar en caso de que una persona cometa errores.

@@ -1,5 +1,5 @@
 from . import config, storage, stats as st
-from .types import CmdArgs
+from .types import CmdArgs, DeleteArgs
 import discord
 import datetime
 from tabulate import tabulate
@@ -24,6 +24,30 @@ async def manage_commands(args: CmdArgs):
 
     if isSubmit:
         await _makeNew(args)
+
+
+async def manage_delete(args: DeleteArgs):
+
+    message, discordMessage, userId, serverId, *_ = args
+
+    words = message.split()
+    words = [word for word in words if '@' not in word]
+
+    data = {
+        "serverId": str(serverId),
+        "authorId": str(userId),
+        "authorName": discordMessage.author.name,
+        "date": discordMessage.created_at.timestamp(),
+        "content": message
+    }
+
+    valid, obj = storage.validateMessage(data)
+    if not valid:
+        return None
+
+    if storage.deleteMessage(obj):
+        return obj
+    return None
 
 
 async def _cmdHelp(args: CmdArgs):

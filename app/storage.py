@@ -69,11 +69,38 @@ def getMessages():
 
 
 def insertMessage(message) -> bool:
-    valid, obj = _validateMessage(message)
+    valid, obj = validateMessage(message)
     if not valid:
         return False
     _parseAppendMessage(obj, globals.MSG_FILE)
     return True
+
+
+'''
+"serverId": "1072610875669762110",
+        "authorId": "380128457188966401",
+        "authorName": "InsertNickName",
+        "date": 1679596165.717,
+        "serie": "demonic evolution",
+        "function": "TL",
+        "chapter": 101.0
+'''
+
+
+def deleteMessage(obj) -> bool:
+    filename = globals.MSG_FILE
+    with open(filename, 'r') as f:
+        messages = json.load(f)
+
+    removed = False
+    if obj in messages:
+        messages.remove(obj)
+        removed = True
+
+    with open(filename, 'w') as f:
+        json.dump(messages, f, indent=4)
+
+    return removed
 
 
 def getSeries():
@@ -126,7 +153,7 @@ def _validateMessages(messages):
     valid_messages = []
 
     for message in messages:
-        valid, obj = _validateMessage(message)
+        valid, obj = validateMessage(message)
         if not valid:
             continue
 
@@ -135,7 +162,7 @@ def _validateMessages(messages):
     return valid_messages
 
 
-def _validateMessage(message):
+def validateMessage(message):
     content = message['content']
     words = content.split()
     words = [word for word in words if '@' not in word]

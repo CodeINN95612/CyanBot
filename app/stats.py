@@ -40,6 +40,7 @@ def parseGlobalStats(data):
             sorted(stats.items(), key=lambda x: x[1][f'{role}_30'], reverse=True))
         gstats.append((h, stats))
 
+    gstats = [(h, _numerate(stat)) for h, stat in gstats]
     gstats = [(h, _toArr(stat)) for h, stat in gstats]
     gstats = [(h, _addTotal(stat)) for h, stat in gstats]
     gstats = [(h, _parseIfEmpty(h, stat)) for h, stat in gstats]
@@ -69,6 +70,7 @@ def parseRoleStats(data, role):
 
     stats = dict(
         sorted(stats.items(), key=lambda x: x[1]['30'], reverse=True))
+    stats = _numerate(stats)
     stats = _toArr(stats)
     stats = _addTotal(stats)
     stats = _parseIfEmpty(h, stats)
@@ -101,6 +103,7 @@ def parseUserStats(data, id):
 
     stats1 = dict(
         sorted(stats1.items(), key=lambda x: x[1]['30'], reverse=True))
+    stats1 = _numerate(stats1)
     stats1 = _toArr(stats1)
     stats1 = _addTotal(stats1)
     stats1 = _parseIfEmpty(h1, stats1)
@@ -148,4 +151,13 @@ def _addTotal(stats):
 def _parseIfEmpty(h, stats):
     if len(stats) == 1:
         stats[0] = ['Total' if i == 0 else '0' for (i, _) in enumerate(h)]
+    return stats
+
+
+def _numerate(stats):
+    for i, id in enumerate(stats, start=1):
+        try:
+            stats[id]["name"] = str(i) + ". " + stats[id]["name"]
+        except Exception as e:
+            pass
     return stats
