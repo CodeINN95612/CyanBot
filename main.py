@@ -1,4 +1,4 @@
-from app import config, commands as cmd, storage, updates
+from app import config, commands as cmd, storage, updates, globals
 from app.types import CmdArgs, DeleteArgs
 import discord
 import asyncio
@@ -78,7 +78,7 @@ async def on_message(message: discord.Message):
 async def reloadConfig():
     while not client.is_ready():
         await asyncio.sleep(1)
-    while True:
+    while globals.RUNNING:
         await asyncio.sleep(1)
         config.reload()
 
@@ -111,7 +111,7 @@ async def _updateHandler(update):
 async def checkUpdates():
     while not client.is_ready():
         await asyncio.sleep(1)
-    while True:
+    while globals.RUNNING:
         try:
             await updates.checkUpdates(handler=_updateHandler)
             await asyncio.sleep(config.config["updateDelay"])
@@ -122,7 +122,11 @@ async def checkUpdates():
 
 
 async def runBot():
-    await client.start(config.config["token"])
+    try:
+        if globals.RUNNING:
+            await client.start(config.config["token"])
+    except:
+        pass
 
 
 async def main():

@@ -1,7 +1,8 @@
-from . import config, storage, stats as st
+from . import config, storage, stats as st, globals
 from .types import CmdArgs, DeleteArgs
 import discord
 import datetime
+import asyncio
 from tabulate import tabulate
 
 
@@ -19,6 +20,8 @@ async def manage_commands(args: CmdArgs):
             await _cmdStats(args)
         elif msg.startswith("al"):
             await _cmdAllow(args)
+        elif msg.startswith("turnoff"):
+            await _cmdOff(args)
 
         return
 
@@ -59,6 +62,8 @@ async def _cmdHelp(args: CmdArgs):
         name="stats [user/userID/role]", value="No caso de envio sem parâmetro, envia estatísticas globais, mas envia as estatísticas do usuário ou da função", inline=True)
     embed.add_field(name="allow <serie>",
                     value="Os usuários agora podem enviar séries com esse nome")
+    embed.add_field(name="turnoff",
+                    value="Este comando faz o bot desligar")
     await args[1].reply(embed=embed)
 
 
@@ -173,3 +178,14 @@ async def _cmdAllow(args: CmdArgs):
     if not storage.isAllowed(serie):
         storage.addAllowed(serie)
     await dm.reply(f"Adicionado '{serie}' às séries permitidas")
+
+
+async def _cmdOff(args: CmdArgs):
+    _, msg, _, _, client, *_ = args
+    user = msg.author.name
+    embed = discord.Embed(title="Desligando o Bot", color=0xff0000,
+                          description=f"A usuário {user} desligou o bot")
+    await msg.reply(embed=embed)
+    await client.close()
+    globals.RUNNING = False
+    await asyncio.sleep(1)
