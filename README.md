@@ -110,7 +110,7 @@ Cada vez que el bot inicia por primera vez, va a escanear todos los mensajes env
 Para subir un trabajo cada usuario deberá escribir un mensaje normal (sin prefijo) con el formato: `<Nombre de la obra> <Capítulo> <Rol> [@menciones]` (El nombre de la obra puede estar separado por espacios y además las menciones son opcionales aunque siempre deben llevar un `@`. Las mayúsculas y minusculas no importan ni en el rol ni el nombre de la obra ya que de fondo será transformado a minúscula.
 Ejemplo:
 ```
-Mi amiga es un monstruo TS 45. 
+Mi amiga es un monstruo 45 TS. 
 ```
 Estos trabajos son almacenados en el archivo `data/msg.json`.
 
