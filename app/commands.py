@@ -20,6 +20,8 @@ async def manage_commands(args: CmdArgs):
             await _cmdStats(args)
         elif msg.startswith("al"):
             await _cmdAllow(args)
+        elif msg.startswith("del"):
+            await _cmdDelete(args)
         elif msg.startswith("turnoff"):
             await _cmdOff(args)
 
@@ -29,28 +31,43 @@ async def manage_commands(args: CmdArgs):
         await _makeNew(args)
 
 
-async def manage_delete(args: DeleteArgs):
+async def _cmdDelete(args: CmdArgs):
 
-    message, discordMessage, userId, serverId, *_ = args
+    message, discordMessage, _, _, client, *_ = args
+    author = discordMessage.author.name
 
     words = message.split()
-    words = [word for word in words if '@' not in word]
+    words = [word for word in words if '@' not in word][1::]
+    message = " ".join(words)
+
+    serverId = str(discordMessage.guild.id)
+    userId = str(discordMessage.author.id)
+
+    testChannel = client.get_channel(int(config.config["testChannel"]))
+    if testChannel:
+        await testChannel.send(f"{author} está excluindo a mensagem '{message}'.")
 
     data = {
-        "serverId": str(serverId),
-        "authorId": str(userId),
-        "authorName": discordMessage.author.name,
+        "serverId": serverId,
+        "authorId": userId,
+        "authorName": author,
         "date": discordMessage.created_at.timestamp(),
         "content": message
     }
 
     valid, obj = storage.validateMessage(data)
     if not valid:
-        return None
+        return
 
-    if storage.deleteMessage(obj):
-        return obj
-    return None
+    if not storage.deleteMessage(obj):
+        if testChannel:
+            await testChannel.send(f"Mensagem '{message}' NO removida.")
+        await discordMessage.reply(f"Mensagem '{message}' NO removida.")
+        return
+
+    if testChannel:
+        await testChannel.send(f"Mensagem '{message}' removida.")
+    await discordMessage.reply(f"Mensagem '{message}' removida.")
 
 
 async def _cmdHelp(args: CmdArgs):
@@ -62,6 +79,8 @@ async def _cmdHelp(args: CmdArgs):
         name="stats [user/userID/role]", value="No caso de envio sem parâmetro, envia estatísticas globais, mas envia as estatísticas do usuário ou da função", inline=True)
     embed.add_field(name="allow <serie>",
                     value="Os usuários agora podem enviar séries com esse nome")
+    embed.add_field(name="delete",
+                    value="Este comando borra un mensaje de la lista de mensajes para las estadisticas")
     embed.add_field(name="turnoff",
                     value="Este comando faz o bot desligar")
     await args[1].reply(embed=embed)
@@ -116,13 +135,13 @@ async def _cmdStats(args: CmdArgs):
     if len(msg) == 1:
         stats = st.parseGlobalStats(data)
 
-        text = ""
-        for stat in stats:
-            text += f"```{_intoTabulate(stat)}```\n"
-
-        embed = discord.Embed(title="Estatísticas globais", color=0x0000ff,
-                              description=text)
+        embed = discord.Embed(title="Estatísticas globais", color=0x0000ff)
         await discordMessage.reply(embed=embed)
+
+        embed = discord.Embed(color=0x0000ff)
+        for stat in stats:
+            embed.description = f"```{_intoTabulate(stat)}```"
+            await discordMessage.reply(embed=embed)
 
         return
 

@@ -77,6 +77,7 @@ Además solo funcionarán con el `prefix` definido.
 - **help**: Despliega una ayuda con información de los comandos.
 - **update**: Genera un archivo de hoja de cálculo, contabilizando el monto que se debe pagar a los usuarios segun los roles trabajados en el **mes actual**. Para definir estos roles es que se debe llenar en el archivo de `data/config.json` los objetos con un `"name"` y un `"value"`. El name es el rol y value es el monto por cada rol.
 - **stats [user/role]**: Muestra estadisticas del usuario o del rol. en caso de dejar vacio muestra estadisticas globales. 
+- **delete <serie> <cap> <rol>**: Elimina un mensaje de la lista de mensajes. No del canal.
 - **turnoff**: Apaga al bot.
 
 ### Actualizaciones
@@ -106,15 +107,12 @@ Para así evitar mostrar la misma serie y capítulo nuevamente.
 ### Subir trabajos
 Para subir los trabajos, es importante definir todos los roles en el archivo `data/config.json` como fue explicado mas arriba. Además, se debe definir el campo `submitChannel` con el *Id* del canal en el que se va a realizar la subida.
 Cada vez que el bot inicia por primera vez, va a escanear todos los mensajes enviados en ese canal por los pasados 30 dias, parametrizables con el campo de `scanDays`. Esto para poder utilizar el comando **update** desde el primer momento.
-Para subir un trabajo cada usuario deberá escribir un mensaje normal (sin prefijo) con el formato: `<Nombre de la obra> <Rol> <Capitulo> [@menciones]` (El nombre de la obra puede estar separado por espacios y además las menciones son opcionales aunque siempre deben llevar un `@`. Las mayúsculas y minusculas no importan ni en el rol ni el nombre de la obra ya que de fondo será transformado a minúscula.
+Para subir un trabajo cada usuario deberá escribir un mensaje normal (sin prefijo) con el formato: `<Nombre de la obra> <Capítulo> <Rol> [@menciones]` (El nombre de la obra puede estar separado por espacios y además las menciones son opcionales aunque siempre deben llevar un `@`. Las mayúsculas y minusculas no importan ni en el rol ni el nombre de la obra ya que de fondo será transformado a minúscula.
 Ejemplo:
 ```
 Mi amiga es un monstruo TS 45. 
 ```
 Estos trabajos son almacenados en el archivo `data/msg.json`.
-
-### Eliminar Trabajos
-Si durante la ejecución del bot, se sube un trabajo y luego se elimina el mensaje. El trabajo también será eliminado.
 
 ### Testeo
 Si se incluye la *Id* de un canal de testeo en `testChannel` del archivo `data/config.json`, en ese canal se imprimiran cosas ligeramente importantes o que se consideren necesarias, por ejemplo si un usuario trata de subir un trabajo, en este canal se mostrará lo que se está almacenando en el archivo de mensajes y además si cumple el formato necesario, de no cumplir el formato necesario, menciona que "no se insertará el trabajo". Este canal solo debería ser visible por admins para validar en caso de que una persona cometa errores.

@@ -93,12 +93,25 @@ def deleteMessage(obj) -> bool:
         messages = json.load(f)
 
     removed = False
-    if obj in messages:
-        messages.remove(obj)
-        removed = True
+    for i, msg in enumerate(messages):
+        if msg["serverId"] != obj["serverId"]:
+            continue
+        if msg["serie"].lower() != obj["serie"].lower():
+            continue
+        if msg["function"].lower() != obj["function"].lower():
+            continue
+        if msg["chapter"] != obj["chapter"]:
+            continue
 
-    with open(filename, 'w') as f:
-        json.dump(messages, f, indent=4)
+        del messages[i]
+        removed = True
+        break
+        
+
+
+    if removed:
+        with open(filename, 'w') as f:
+            json.dump(messages, f, indent=4)
 
     return removed
 

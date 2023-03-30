@@ -14,38 +14,7 @@ async def on_ready():
     testChannel = client.get_channel(int(config.config["testChannel"]))
     if testChannel:
         await testChannel.send(f"+++++++++++++++++++++++++++++++++++++++")
-    await storage.scanMessages(client)
-
-
-@client.event
-async def on_message_delete(message):
-
-    submitChannel = config.config["submitChannel"]
-    if not message.channel.id == int(submitChannel):
-        return
-
-    isCommand = message.content.startswith(config.config['prefix'])
-
-    if isCommand:
-        return
-
-    wordArray = [word for word in message.content.split() if "@" not in word]
-    msgCase = " ".join(wordArray)[0::]
-    msg = msgCase.lower()
-
-    userId = str(message.author.id)
-
-    # Make developer life easier by separating the discord message
-    args: DeleteArgs = (msg, message, userId, str(message.guild.id), client)
-
-    testChannel = client.get_channel(int(config.config["testChannel"]))
-    if testChannel:
-        await testChannel.send(f"Deleting '{message.content}'")
-
-    obj = await cmd.manage_delete(args)
-
-    if testChannel and obj:
-        await testChannel.send(f"Deleted '{message.content}'")
+    # await storage.scanMessages(client)
 
 
 @client.event
@@ -125,8 +94,8 @@ async def runBot():
     try:
         if globals.RUNNING:
             await client.start(config.config["token"])
-    except:
-        pass
+    except Exception as e:
+        print("Error: ", e)
 
 
 async def main():
