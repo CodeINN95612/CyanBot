@@ -1,11 +1,9 @@
-from . import config, globals, storage
+from . import storage
+from . import config, globals, spreadsheet as ss
 import os
 import json
 import datetime
 import discord
-
-import openpyxl
-from openpyxl.styles import Font, Border, Side, PatternFill, Alignment
 
 
 async def setUp():
@@ -31,7 +29,7 @@ async def scanMessages(discordClient: discord.Client):
     scanDays = config.config["scanDays"]
     testChannel = discordClient.get_channel(int(config.config["testChannel"]))
     if testChannel:
-        await testChannel.send(f"Escaneando mensajes de los pasados {scanDays} dias")
+        await testChannel.send(f"Verificando mensagens dos últimos {scanDays} dias")
 
     messages = []
 
@@ -63,7 +61,7 @@ async def scanMessages(discordClient: discord.Client):
     _parseOverwriteMessages(validMessages, globals.MSG_FILE)
 
     if testChannel:
-        await testChannel.send(f"Escaneados {len(validMessages)} mensajes")
+        await testChannel.send(f"{len(validMessages)} mensagens verificadas")
 
 
 def getMessages():
@@ -72,11 +70,38 @@ def getMessages():
 
 
 def insertMessage(message) -> bool:
-    valid, obj = _validateMessage(message)
+    valid, obj = validateMessage(message)
     if not valid:
         return False
     _parseAppendMessage(obj, globals.MSG_FILE)
     return True
+
+
+def deleteMessage(obj) -> bool:
+    filename = globals.MSG_FILE
+    with open(filename, 'r') as f:
+        messages = json.load(f)
+
+    removed = False
+    for i, msg in enumerate(messages):
+        if msg["serverId"] != obj["serverId"]:
+            continue
+        if msg["serie"].lower() != obj["serie"].lower():
+            continue
+        if msg["function"].lower() != obj["function"].lower():
+            continue
+        if msg["chapter"] != obj["chapter"]:
+            continue
+
+        del messages[i]
+        removed = True
+        break
+
+    if removed:
+        with open(filename, 'w') as f:
+            json.dump(messages, f, indent=4)
+
+    return removed
 
 
 def getSeries():
@@ -108,7 +133,20 @@ def isAllowed(name):
     with open(globals.ALLOWED_FILE, 'r') as f:
         dataFile = json.load(f)
 
-    return name in [s.lower() for s in dataFile]
+    return name.lower() in [s.lower() for s in dataFile]
+
+
+def getAllowed():
+    with open(globals.ALLOWED_FILE, 'r') as f:
+        dataFile = json.load(f)
+    return [s.lower() for s in dataFile]
+
+
+def getAllowedRealName(loweredName):
+    with open(globals.ALLOWED_FILE, 'r') as f:
+        dataFile = json.load(f)
+    name = [s for s in dataFile if s.lower() == loweredName.lower()][0]
+    return name
 
 
 def _validateMessages(messages):
@@ -116,7 +154,7 @@ def _validateMessages(messages):
     valid_messages = []
 
     for message in messages:
-        valid, obj = _validateMessage(message)
+        valid, obj = validateMessage(message)
         if not valid:
             continue
 
@@ -125,7 +163,7 @@ def _validateMessages(messages):
     return valid_messages
 
 
-def _validateMessage(message):
+def validateMessage(message):
     content = message['content']
     words = content.split()
     words = [word for word in words if '@' not in word]
@@ -148,13 +186,14 @@ def _validateMessage(message):
     serie = " ".join(words[:-2])
     if not storage.isAllowed(serie):
         return (False, {})
+    serie = storage.getAllowedRealName(serie)
 
     return (True, {
         "serverId": message["serverId"],
         "authorId": message["authorId"],
         "authorName": message["authorName"],
         "date": message["date"],
-        "serie": " ".join(words[:-2]),
+        "serie": serie,
         "function": role_values[0],
         "chapter": numbers
     })
@@ -190,30 +229,30 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
     # filtrar servidor
     serverId = str(discordMessage.guild.id)
     now = datetime.datetime.now()
+    ago = now - datetime.timedelta(days=config.config["scanDays"])
     messages = []
     for msg in messagesFile:
         if msg["serverId"] != serverId:
             continue
         date = datetime.datetime.fromtimestamp(msg["date"])
-        if date.month == now.month and date.year == now.year:
+        if ago <= date <= now:
             messages.append(msg)
 
     # construir nueva data
     data = {}
-    def numColName(n: str) -> str: return f"num_{n}"
-    def valColName(n: str) -> str: return f"val_{n}"
     for msg in messages:
         id = msg["authorId"]
         if id not in data:
             data[id] = {
                 "author": msg["authorName"],
                 "totalWork": 0,
-                "totalValue": 0.0
+                "totalValue": 0.0,
+                "roles": ""
             }
             for role in config.config["roles"]:
                 role = role["name"]
-                data[id][valColName(role)] = 0.0
-                data[id][numColName(role)] = 0
+                data[id][ss.valColName(role)] = 0.0
+                data[id][ss.numColName(role)] = 0
 
         role = [role for role in config.config["roles"]
                 if role["name"].lower() == msg["function"].lower()][0]
@@ -221,67 +260,20 @@ def IntoSpreadsheet(discordMessage: discord.Message, filename: str):
         roleValue = role["value"]
         data[id]["totalWork"] += 1
         data[id]["totalValue"] += roleValue
-        data[id][valColName(roleName)] += roleValue
-        data[id][numColName(roleName)] += 1
+        data[id][ss.valColName(roleName)] += roleValue
+        data[id][ss.numColName(roleName)] += 1
+        if data[id]["roles"] == "":
+            data[id]["roles"] = roleName
+        elif not roleName in data[id]["roles"].split():
+            data[id]["roles"] += f" - {roleName}"
 
-    # Spreadsheet
+    # Archivo de Excel
 
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Crear un objeto de formato para el título de la columna
-    titulo_formato = openpyxl.styles.NamedStyle(name="titulo_formato")
-    titulo_formato.font = Font(bold=True, size=14)
-    titulo_formato.fill = PatternFill(
-        start_color="FFCC99", end_color="FFCC99", fill_type="solid")
-    titulo_formato.border = Border(left=Side(style="thin"), right=Side(
-        style="thin"), top=Side(style="thin"), bottom=Side(style="thin"))
-    titulo_formato.alignment = Alignment(
-        horizontal="center", vertical="center", wrap_text=True)
-
-    ws["A1"] = "FECHA DE CORTE:"
-    ws["B1"] = now.strftime("%d-%m-%Y")
-
-    filaInicial = 4
-
-    headers = ["Id Usuario", "Usuario", "Trabajos Totales", "Monto Total"]
-    for role in config.config["roles"]:
-        headers.append("Cantidad " + role["name"])
-        headers.append("Valor " + role["name"])
-
-    for i, header in enumerate(headers, start=1):
-        cell = ws.cell(row=filaInicial, column=i, value=header)
-        cell.style = titulo_formato
-        cell.alignment = openpyxl.styles.Alignment(
-            wrapText=True, horizontal='center', vertical='center')
-        ws.column_dimensions[cell.column_letter].width = 20
-
-    for i, id in enumerate(data, start=1):
-        row = i + filaInicial
-        cell = data[id]
-        ws.cell(row=row, column=1, value=id)
-        ws.cell(row=row, column=2, value=cell["author"])
-        ws.cell(row=row, column=3, value=cell["totalWork"])
-        ws.cell(row=row, column=4, value=cell["totalValue"])
-        col = 5
-        for role in config.config["roles"]:
-            roleName = role["name"]
-            ws.cell(row=row, column=col, value=cell[numColName(roleName)])
-            col += 1
-            ws.cell(row=row, column=col, value=cell[valColName(roleName)])
-            col += 1
-
-    # Aplicar bordes
-    for row in ws.iter_rows(min_row=1, min_col=1, max_col=25):
-        for cell in row:
-            if cell.value:
-                cell.border = titulo_formato.border
-
-    # Guardar archivo de Excel
     archivo = "./data/" + config.config["updateSpreadsheetName"] + '.xlsx'
-    wb.save(archivo)
 
-    # Enviar archivo como mensaje embebido en Discord
+    ss.createWorkbook(
+        archivo, data, config.config["roles"], storage.getAllowed(), now, ago)
+
     with open(archivo, 'rb') as f:
         file = discord.File(f, filename=filename)
     return file

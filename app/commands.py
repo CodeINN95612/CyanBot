@@ -2,12 +2,13 @@ from . import config, storage, stats as st
 from .types import CmdArgs
 import discord
 import datetime
+import asyncio
 from tabulate import tabulate
 
 
 async def manage_commands(args: CmdArgs):
 
-    msg, discordMessage, userId, isCommand, _, isSubmit, isAdmin = args
+    msg, discordMessage, userId, isCommand, _, isSubmit, isAdmin, *_ = args
 
     if isCommand and isAdmin and userId in config.config["admins"]:
 
@@ -19,6 +20,10 @@ async def manage_commands(args: CmdArgs):
             await _cmdStats(args)
         elif msg.startswith("al"):
             await _cmdAllow(args)
+        elif msg.startswith("del"):
+            await _cmdDelete(args)
+        elif msg.startswith("turnoff"):
+            await _cmdOff(args)
 
         return
 
@@ -35,6 +40,10 @@ async def _cmdHelp(args: CmdArgs):
         name="stats [user/userID/role]", value="En caso de enviar sin parametro envia estadisticas globales, sino envia las estadisticas del usuario o del rol", inline=True)
     embed.add_field(name="allow <serie>",
                     value="Users can now submit series with that name")
+    embed.add_field(name="delete",
+                    value="Este comando borra un mensaje de la lista de mensajes para las estadisticas")
+    embed.add_field(name="turnoff",
+                    value="Este comando apaga el bot.")
     await args[1].reply(embed=embed)
 
 
@@ -87,13 +96,13 @@ async def _cmdStats(args: CmdArgs):
     if len(msg) == 1:
         stats = st.parseGlobalStats(data)
 
-        text = ""
-        for stat in stats:
-            text += f"```{_intoTabulate(stat)}```\n"
-
-        embed = discord.Embed(title="Estadísticas globales", color=0x0000ff,
-                              description=text)
+        embed = discord.Embed(title="Estadísticas Globales", color=0x0000ff)
         await discordMessage.reply(embed=embed)
+
+        embed = discord.Embed(color=0x0000ff)
+        for stat in stats:
+            embed.description = f"```{_intoTabulate(stat)}```"
+            await discordMessage.reply(embed=embed)
 
         return
 
@@ -138,14 +147,64 @@ def _intoTabulate(stats):
 
 
 async def _cmdAllow(args: CmdArgs):
-    msg, dm, *_ = args
-    msg = msg.split(" ")
+    _, dm, *_, msgCase = args
+    msg = msgCase.split(" ")
     if len(msg) == 1:
         await _cmdHelp(args)
         return
 
-    serie = " ".join(msg[1::]).lower()
+    serie = " ".join(msg[1::])
 
     if not storage.isAllowed(serie):
         storage.addAllowed(serie)
-    await dm.reply(f"Added '{serie}' to allowed series")
+    await dm.reply(f"Agregada '{serie}' a series permitidas")
+
+
+async def _cmdDelete(args: CmdArgs):
+
+    message, discordMessage, _, _, client, *_ = args
+    author = discordMessage.author.name
+
+    words = message.split()
+    words = [word for word in words if '@' not in word][1::]
+    message = " ".join(words)
+
+    serverId = str(discordMessage.guild.id)
+    userId = str(discordMessage.author.id)
+
+    testChannel = client.get_channel(int(config.config["testChannel"]))
+    if testChannel:
+        await testChannel.send(f"{author} está excluindo a mensagem '{message}'.")
+
+    data = {
+        "serverId": serverId,
+        "authorId": userId,
+        "authorName": author,
+        "date": discordMessage.created_at.timestamp(),
+        "content": message
+    }
+
+    valid, obj = storage.validateMessage(data)
+    if not valid:
+        return
+
+    if not storage.deleteMessage(obj):
+        if testChannel:
+            await testChannel.send(f"Mensagem '{message}' NO removida.")
+        await discordMessage.reply(f"Mensagem '{message}' NO removida.")
+        return
+
+    if testChannel:
+        await testChannel.send(f"Mensagem '{message}' removida.")
+    await discordMessage.reply(f"Mensagem '{message}' removida.")
+
+
+async def _cmdOff(args: CmdArgs):
+    _, msg, _, _, client, *_ = args
+    user = msg.author.name
+    embed = discord.Embed(title="Desligando o Bot", color=0xff0000,
+                          description=f"A usuário {user} desligou o bot")
+    await msg.reply(embed=embed)
+    await client.close()
+    globals.RUNNING = False
+    await asyncio.sleep(1)
