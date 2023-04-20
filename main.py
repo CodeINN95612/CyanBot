@@ -14,7 +14,7 @@ async def on_ready():
     testChannel = client.get_channel(int(config.config["testChannel"]))
     if testChannel:
         await testChannel.send(f"+++++++++++++++++++++++++++++++++++++++")
-    # await storage.scanMessages(client)
+    await storage.scanMessages(client)
 
 
 @client.event
